@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { PlayerRegistration } from './components/PlayerRegistration';
 import { MatchRecorder } from './components/MatchRecorder';
 import { LeagueTable } from './components/LeagueTable';
@@ -9,8 +9,10 @@ import { Moon, Sun, Users, Award, History, LineChart, LayoutGrid } from 'lucide-
 
 function App() {
   const [refreshKey, setRefreshKey] = useState(0);
-  const [managerOpen, setManagerOpen] = useState(false);
-  const [activePage, setActivePage] = useState<'league' | 'history' | 'positions'>('league');
+  const [activePage, setActivePage] = useState<'league' | 'history' | 'positions' | 'player'>('league');
+  const [hasEditAccess, setHasEditAccess] = useState(false);
+  const [passkeyInput, setPasskeyInput] = useState('');
+  const [passkeyError, setPasskeyError] = useState('');
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
     return saved ? JSON.parse(saved) : false;
@@ -32,8 +34,26 @@ function App() {
   const navItems = [
     { key: 'league', label: 'League', icon: LayoutGrid },
     { key: 'history', label: 'History', icon: History },
-    { key: 'positions', label: 'Position Graph', icon: LineChart }
+    { key: 'positions', label: 'Position Graph', icon: LineChart },
+    { key: 'player', label: 'Player', icon: Users }
   ] as const;
+
+  const handlePasskeySubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const PASSKEY = '194658';
+    if (hasEditAccess && passkeyInput.trim() === '') {
+      setHasEditAccess(false);
+      setPasskeyError('');
+      return;
+    }
+    if (passkeyInput.trim() === PASSKEY) {
+      setHasEditAccess(true);
+      setPasskeyError('');
+    } else {
+      setHasEditAccess(false);
+      setPasskeyError('Incorrect passkey. Try again.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -52,13 +72,29 @@ function App() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setManagerOpen(true)}
-                className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors"
-              >
-                <Users className="w-4 h-4" />
-                Manage players & teams
-              </button>
+              <form onSubmit={handlePasskeySubmit} className="hidden md:flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg">
+                <input
+                  type="password"
+                  value={passkeyInput}
+                  onChange={(e) => setPasskeyInput(e.target.value)}
+                  placeholder="Enter passkey"
+                  className="bg-transparent text-sm text-gray-900 dark:text-white outline-none placeholder:text-gray-500 dark:placeholder:text-gray-400 w-32"
+                />
+                <button
+                  type="submit"
+                  className="text-xs px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  {hasEditAccess ? 'Lock' : 'Unlock'}
+                </button>
+                <div className={`text-[11px] px-2 py-1 rounded ${hasEditAccess ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-200' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200'}`}>
+                  {hasEditAccess ? 'Edit enabled' : 'Read only'}
+                </div>
+              </form>
+              {passkeyError && (
+                <span className="hidden md:block text-xs text-red-600 dark:text-red-400">
+                  {passkeyError}
+                </span>
+              )}
               <button
                 onClick={() => setDarkMode(!darkMode)}
                 className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
@@ -113,10 +149,7 @@ function App() {
           <section className="flex-1 space-y-6">
             {activePage === 'league' && (
               <>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <PlayerRegistration onPlayerAdded={handleDataChange} />
-                  <MatchRecorder onMatchRecorded={handleDataChange} refreshKey={refreshKey} />
-                </div>
+                <MatchRecorder onMatchRecorded={handleDataChange} refreshKey={refreshKey} disabled={!hasEditAccess} />
                 <LeagueTable refreshKey={refreshKey} onDataChange={handleDataChange} />
               </>
             )}
@@ -125,20 +158,22 @@ function App() {
               <MatchHistory
                 refreshKey={refreshKey}
                 onDataChange={handleDataChange}
+                allowEditing={hasEditAccess}
               />
             )}
 
             {activePage === 'positions' && (
               <PositionTrendChart refreshKey={refreshKey} />
             )}
+
+            {activePage === 'player' && (
+              <div className="space-y-6">
+                <PlayerRegistration onPlayerAdded={handleDataChange} disabled={!hasEditAccess} />
+                <PlayerManager onChange={handleDataChange} disabled={!hasEditAccess} />
+              </div>
+            )}
           </section>
         </div>
-
-        <PlayerManager
-          open={managerOpen}
-          onClose={() => setManagerOpen(false)}
-          onChange={handleDataChange}
-        />
       </main>
     </div>
   );

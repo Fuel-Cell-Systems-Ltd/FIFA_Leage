@@ -7,7 +7,12 @@ interface Team {
   name: string;
 }
 
-export function PlayerRegistration({ onPlayerAdded }: { onPlayerAdded: () => void }) {
+interface PlayerRegistrationProps {
+  onPlayerAdded: () => void;
+  disabled?: boolean;
+}
+
+export function PlayerRegistration({ onPlayerAdded, disabled = false }: PlayerRegistrationProps) {
   const [name, setName] = useState('');
   const [fifaTeam, setFifaTeam] = useState('');
   const [teams, setTeams] = useState<Team[]>([]);
@@ -17,10 +22,13 @@ export function PlayerRegistration({ onPlayerAdded }: { onPlayerAdded: () => voi
   const [error, setError] = useState('');
 
   useEffect(() => {
-    loadTeams();
-  }, []);
+    if (!disabled) {
+      loadTeams();
+    }
+  }, [disabled]);
 
   const loadTeams = async () => {
+    if (disabled) return;
     try {
       const data = await fetchTeams();
       setTeams(data);
@@ -33,6 +41,7 @@ export function PlayerRegistration({ onPlayerAdded }: { onPlayerAdded: () => voi
     e.preventDefault();
     if (!name.trim() || !fifaTeam) return;
 
+    if (disabled) return;
     setLoading(true);
     setError('');
 
@@ -51,6 +60,7 @@ export function PlayerRegistration({ onPlayerAdded }: { onPlayerAdded: () => voi
   const handleAddTeam = async () => {
     if (!newTeamName.trim()) return;
 
+    if (disabled) return;
     setLoading(true);
     setError('');
 
@@ -83,7 +93,8 @@ export function PlayerRegistration({ onPlayerAdded }: { onPlayerAdded: () => voi
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            disabled={disabled}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
             placeholder="Enter player name"
             required
           />
@@ -96,8 +107,9 @@ export function PlayerRegistration({ onPlayerAdded }: { onPlayerAdded: () => voi
             </label>
             <button
               type="button"
+              disabled={disabled}
               onClick={() => setShowAddTeam(!showAddTeam)}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+              className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus className="w-3 h-3" />
               Add Team
@@ -110,13 +122,14 @@ export function PlayerRegistration({ onPlayerAdded }: { onPlayerAdded: () => voi
                 type="text"
                 value={newTeamName}
                 onChange={(e) => setNewTeamName(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                disabled={disabled}
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
                 placeholder="Enter new team name"
               />
               <button
                 type="button"
                 onClick={handleAddTeam}
-                disabled={loading || !newTeamName.trim()}
+                disabled={loading || !newTeamName.trim() || disabled}
                 className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
                 Add
@@ -128,7 +141,8 @@ export function PlayerRegistration({ onPlayerAdded }: { onPlayerAdded: () => voi
             id="team"
             value={fifaTeam}
             onChange={(e) => setFifaTeam(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            disabled={disabled}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
             required
           >
             <option value="">Select a team</option>
@@ -148,11 +162,17 @@ export function PlayerRegistration({ onPlayerAdded }: { onPlayerAdded: () => voi
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || disabled}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Registering...' : 'Register Player'}
         </button>
+
+        {disabled && (
+          <p className="text-xs text-center text-amber-600 dark:text-amber-400">
+            Enter the passkey in the Player tab to unlock edits.
+          </p>
+        )}
       </form>
     </div>
   );

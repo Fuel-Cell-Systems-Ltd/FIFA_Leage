@@ -21,3 +21,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Local data files (generated at runtime)
+data.json
+matches.json

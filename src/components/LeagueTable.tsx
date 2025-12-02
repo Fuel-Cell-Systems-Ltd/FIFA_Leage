@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchStandings, resetLeague } from '../lib/api';
+import { fetchStandings, resetLeague, fetchTeams } from '../lib/api';
 import { Award, RefreshCw, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface Standing {
@@ -21,11 +21,17 @@ interface LeagueTableProps {
   onDataChange?: () => void;
 }
 
+interface Team {
+  id: string;
+  name: string;
+}
+
 export function LeagueTable({ refreshKey, onDataChange }: LeagueTableProps) {
   const [standings, setStandings] = useState<Standing[]>([]);
   const [loading, setLoading] = useState(true);
   const [collapsableOpen, setCollapsableOpen] = useState(true);
   const [resetting, setResetting] = useState(false);
+  const [teams, setTeams] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     loadStandings();
@@ -34,8 +40,9 @@ export function LeagueTable({ refreshKey, onDataChange }: LeagueTableProps) {
   const loadStandings = async () => {
     setLoading(true);
     try {
-      const data = await fetchStandings();
+      const [data, teamData] = await Promise.all([fetchStandings(), fetchTeams()]);
       setStandings(data);
+      setTeams(new Map((teamData as Team[]).map((t) => [t.id, t.name])));
     } catch (err) {
       console.error('Failed to load standings:', err);
     }
@@ -110,15 +117,18 @@ export function LeagueTable({ refreshKey, onDataChange }: LeagueTableProps) {
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">
-                    Pos
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">
-                    Player
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">
-                    P
-                  </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">
+                Pos
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">
+                Player
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">
+                Team
+              </th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">
+                P
+              </th>
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">
                     W
                   </th>
@@ -156,6 +166,11 @@ export function LeagueTable({ refreshKey, onDataChange }: LeagueTableProps) {
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">{standing.player_name}</div>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="text-sm text-gray-700 dark:text-gray-300">
+                        {standing.team_id ? teams.get(standing.team_id) || standing.team_id : '—'}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-gray-300">
                       {standing.matches_played}

@@ -21,11 +21,12 @@ interface MatchHistoryProps {
   refreshKey?: number;
   onDataChange?: () => void;
   className?: string;
+  allowEditing?: boolean;
 }
 
 const MAX_VISIBLE_MATCHES = 10;
 
-export function MatchHistory({ refreshKey, onDataChange, className = '' }: MatchHistoryProps) {
+export function MatchHistory({ refreshKey, onDataChange, className = '', allowEditing = true }: MatchHistoryProps) {
   const [matches, setMatches] = useState<Match[]>([]);
   const [players, setPlayers] = useState<Map<string, Player>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -44,6 +45,12 @@ export function MatchHistory({ refreshKey, onDataChange, className = '' }: Match
   useEffect(() => {
     loadData();
   }, [refreshKey]);
+
+  useEffect(() => {
+    if (!allowEditing) {
+      setEditingId(null);
+    }
+  }, [allowEditing]);
 
   const loadData = async () => {
     setLoading(true);
@@ -78,6 +85,7 @@ export function MatchHistory({ refreshKey, onDataChange, className = '' }: Match
   };
 
   const startEdit = (match: Match) => {
+    if (!allowEditing) return;
     setEditingId(match.id);
     setEditForm({
       player1_id: match.player1_id,
@@ -177,7 +185,7 @@ export function MatchHistory({ refreshKey, onDataChange, className = '' }: Match
             </div>
           )}
 
-          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {visibleMatches.map((match) => {
               const player1 = players.get(match.player1_id);
               const player2 = players.get(match.player2_id);
@@ -191,7 +199,7 @@ export function MatchHistory({ refreshKey, onDataChange, className = '' }: Match
               return (
                 <div
                   key={match.id}
-                  className="border border-gray-200 dark:border-gray-700 rounded p-3 bg-gray-50/50 dark:bg-gray-900/40"
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50/50 dark:bg-gray-900/40 h-full flex flex-col"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
@@ -286,13 +294,15 @@ export function MatchHistory({ refreshKey, onDataChange, className = '' }: Match
                     </div>
                   ) : (
                     <div className="flex justify-end mt-3">
-                      <button
-                        type="button"
-                        onClick={() => startEdit(match)}
-                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                      >
-                        <Pencil className="w-4 h-4" /> Edit
-                      </button>
+                      {allowEditing && (
+                        <button
+                          type="button"
+                          onClick={() => startEdit(match)}
+                          className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                        >
+                          <Pencil className="w-4 h-4" /> Edit
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
