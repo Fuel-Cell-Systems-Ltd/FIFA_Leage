@@ -16,6 +16,22 @@ export async function createPlayer(name: string, teamId: string) {
   return response.json();
 }
 
+export async function updatePlayer(id: string, name: string, teamId: string | null) {
+  const response = await fetch(`${API_URL}/players/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, team_id: teamId })
+  });
+  if (!response.ok) throw new Error('Failed to update player');
+  return response.json();
+}
+
+export async function deletePlayer(id: string) {
+  const response = await fetch(`${API_URL}/players/${id}`, { method: 'DELETE' });
+  if (!response.ok) throw new Error('Failed to delete player');
+  return response.json();
+}
+
 export async function fetchTeams() {
   const response = await fetch(`${API_URL}/teams`);
   if (!response.ok) throw new Error('Failed to fetch teams');
@@ -29,6 +45,22 @@ export async function createTeam(name: string) {
     body: JSON.stringify({ name })
   });
   if (!response.ok) throw new Error('Failed to create team');
+  return response.json();
+}
+
+export async function updateTeam(id: string, name: string) {
+  const response = await fetch(`${API_URL}/teams/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  });
+  if (!response.ok) throw new Error('Failed to update team');
+  return response.json();
+}
+
+export async function deleteTeam(id: string) {
+  const response = await fetch(`${API_URL}/teams/${id}`, { method: 'DELETE' });
+  if (!response.ok) throw new Error('Failed to delete team');
   return response.json();
 }
 

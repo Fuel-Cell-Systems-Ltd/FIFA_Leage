@@ -10,35 +10,67 @@ const __dirname = dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = join(__dirname, 'data.json');
+const MATCHES_FILE = join(__dirname, 'matches.json');
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static('dist'));
 
-function readData() {
+function ensureDataFile() {
   if (!existsSync(DATA_FILE)) {
     const initialData = {
       players: [],
-      matches: [],
       teams: []
     };
     writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2));
-    return initialData;
   }
-  return JSON.parse(readFileSync(DATA_FILE, 'utf8'));
 }
 
-function writeData(data) {
-  writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+function readCoreData() {
+  ensureDataFile();
+  const data = JSON.parse(readFileSync(DATA_FILE, 'utf8'));
+
+  // migrate old matches from data.json into matches.json to keep files separate
+  if (Array.isArray(data.matches) && data.matches.length) {
+    writeMatches(data.matches);
+    delete data.matches;
+    writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  }
+
+  return {
+    players: data.players || [],
+    teams: data.teams || []
+  };
+}
+
+function writeCoreData(partial) {
+  ensureDataFile();
+  const existing = JSON.parse(readFileSync(DATA_FILE, 'utf8'));
+  const updated = {
+    players: partial.players ?? existing.players ?? [],
+    teams: partial.teams ?? existing.teams ?? []
+  };
+  writeFileSync(DATA_FILE, JSON.stringify(updated, null, 2));
+}
+
+function readMatches() {
+  if (!existsSync(MATCHES_FILE)) {
+    writeMatches([]);
+  }
+  return JSON.parse(readFileSync(MATCHES_FILE, 'utf8'));
+}
+
+function writeMatches(matches) {
+  writeFileSync(MATCHES_FILE, JSON.stringify(matches, null, 2));
 }
 
 app.get('/api/players', (req, res) => {
-  const data = readData();
-  res.json(data.players);
+  const data = readCoreData();
+  res.json(data.players || []);
 });
 
 app.post('/api/players', (req, res) => {
-  const data = readData();
+  const data = readCoreData();
   const newPlayer = {
     id: Date.now().toString(),
     name: req.body.name,
@@ -46,34 +78,101 @@ app.post('/api/players', (req, res) => {
     created_at: new Date().toISOString()
   };
   data.players.push(newPlayer);
-  writeData(data);
+  writeCoreData(data);
   res.json(newPlayer);
 });
 
+app.put('/api/players/:id', (req, res) => {
+  const data = readCoreData();
+  const idx = data.players.findIndex(p => p.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Player not found' });
+
+  const existing = data.players[idx];
+  const updated = {
+    ...existing,
+    name: req.body.name ?? existing.name,
+    team_id: req.body.team_id ?? existing.team_id,
+    updated_at: new Date().toISOString()
+  };
+  data.players[idx] = updated;
+  writeCoreData(data);
+  res.json(updated);
+});
+
+app.delete('/api/players/:id', (req, res) => {
+  const data = readCoreData();
+  const playerId = req.params.id;
+  const before = data.players.length;
+  data.players = data.players.filter(p => p.id !== playerId);
+  if (data.players.length === before) {
+    return res.status(404).json({ error: 'Player not found' });
+  }
+  writeCoreData(data);
+
+  // Remove matches involving this player from matches file
+  const matches = readMatches().filter(
+    m => m.player1_id !== playerId && m.player2_id !== playerId
+  );
+  writeMatches(matches);
+
+  res.json({ success: true });
+});
+
 app.get('/api/teams', (req, res) => {
-  const data = readData();
-  res.json(data.teams);
+  const data = readCoreData();
+  res.json(data.teams || []);
 });
 
 app.post('/api/teams', (req, res) => {
-  const data = readData();
+  const data = readCoreData();
   const newTeam = {
     id: Date.now().toString(),
     name: req.body.name,
     created_at: new Date().toISOString()
   };
   data.teams.push(newTeam);
-  writeData(data);
+  writeCoreData(data);
   res.json(newTeam);
 });
 
+app.put('/api/teams/:id', (req, res) => {
+  const data = readCoreData();
+  const idx = data.teams.findIndex(t => t.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Team not found' });
+  const existing = data.teams[idx];
+  const updated = {
+    ...existing,
+    name: req.body.name ?? existing.name,
+    updated_at: new Date().toISOString()
+  };
+  data.teams[idx] = updated;
+  writeCoreData(data);
+  res.json(updated);
+});
+
+app.delete('/api/teams/:id', (req, res) => {
+  const data = readCoreData();
+  const teamId = req.params.id;
+  const before = data.teams.length;
+  data.teams = data.teams.filter(t => t.id !== teamId);
+  if (data.teams.length === before) {
+    return res.status(404).json({ error: 'Team not found' });
+  }
+  // Clear team assignment for players on this team
+  data.players = data.players.map(p =>
+    p.team_id === teamId ? { ...p, team_id: null } : p
+  );
+  writeCoreData(data);
+  res.json({ success: true });
+});
+
 app.get('/api/matches', (req, res) => {
-  const data = readData();
-  res.json(data.matches);
+  const matches = readMatches();
+  res.json(matches);
 });
 
 app.post('/api/matches', (req, res) => {
-  const data = readData();
+  const matches = readMatches();
   const newMatch = {
     id: Date.now().toString(),
     player1_id: req.body.player1_id,
@@ -83,20 +182,20 @@ app.post('/api/matches', (req, res) => {
     match_date: req.body.match_date || new Date().toISOString(),
     created_at: new Date().toISOString()
   };
-  data.matches.push(newMatch);
-  writeData(data);
+  matches.push(newMatch);
+  writeMatches(matches);
   res.json(newMatch);
 });
 
 app.put('/api/matches/:id', (req, res) => {
-  const data = readData();
-  const matchIndex = data.matches.findIndex(m => m.id === req.params.id);
+  const matches = readMatches();
+  const matchIndex = matches.findIndex(m => m.id === req.params.id);
 
   if (matchIndex === -1) {
     return res.status(404).json({ error: 'Match not found' });
   }
 
-  const existing = data.matches[matchIndex];
+  const existing = matches[matchIndex];
   const updatedMatch = {
     ...existing,
     player1_id: req.body.player1_id ?? existing.player1_id,
@@ -107,20 +206,19 @@ app.put('/api/matches/:id', (req, res) => {
     updated_at: new Date().toISOString()
   };
 
-  data.matches[matchIndex] = updatedMatch;
-  writeData(data);
+  matches[matchIndex] = updatedMatch;
+  writeMatches(matches);
   res.json(updatedMatch);
 });
 
 app.post('/api/reset', (req, res) => {
-  const data = readData();
-  data.matches = [];
-  writeData(data);
+  writeMatches([]);
   res.json({ success: true });
 });
 
 app.get('/api/standings', (req, res) => {
-  const data = readData();
+  const data = readCoreData();
+  const matches = readMatches();
   const standings = {};
 
   data.players.forEach(player => {
@@ -139,7 +237,7 @@ app.get('/api/standings', (req, res) => {
     };
   });
 
-  data.matches.forEach(match => {
+  matches.forEach(match => {
     const p1 = standings[match.player1_id];
     const p2 = standings[match.player2_id];
 

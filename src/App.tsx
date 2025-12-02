@@ -3,10 +3,12 @@ import { PlayerRegistration } from './components/PlayerRegistration';
 import { MatchRecorder } from './components/MatchRecorder';
 import { LeagueTable } from './components/LeagueTable';
 import { MatchHistory } from './components/MatchHistory';
-import { Moon, Sun } from 'lucide-react';
+import { PlayerManager } from './components/PlayerManager';
+import { Moon, Sun, Users } from 'lucide-react';
 
 function App() {
   const [refreshKey, setRefreshKey] = useState(0);
+  const [managerOpen, setManagerOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
     return saved ? JSON.parse(saved) : false;
@@ -41,17 +43,26 @@ function App() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Company Championship</p>
               </div>
             </div>
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              aria-label="Toggle dark mode"
-            >
-              {darkMode ? (
-                <Sun className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-              ) : (
-                <Moon className="w-5 h-5 text-gray-600" />
-              )}
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setManagerOpen(true)}
+                className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+              >
+                <Users className="w-4 h-4" />
+                Manage players & teams
+              </button>
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                aria-label="Toggle dark mode"
+              >
+                {darkMode ? (
+                  <Sun className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                ) : (
+                  <Moon className="w-5 h-5 text-gray-600" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -66,6 +77,12 @@ function App() {
           <LeagueTable refreshKey={refreshKey} onDataChange={handleDataChange} />
           <MatchHistory refreshKey={refreshKey} onDataChange={handleDataChange} />
         </div>
+
+        <PlayerManager
+          open={managerOpen}
+          onClose={() => setManagerOpen(false)}
+          onChange={handleDataChange}
+        />
       </main>
     </div>
   );
