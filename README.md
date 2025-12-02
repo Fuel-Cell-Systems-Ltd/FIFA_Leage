@@ -1,116 +1,244 @@
 # Fuel Cell Systems FIFA League
 
-A self-contained web application for tracking FIFA game matches and league standings.
+A self-contained web application for recording FIFA matches, managing players, and tracking league standings.  
+Everything runs locally inside a single Node/Express server — no external database required.
+
+---
 
 ## Repository
 https://github.com/Fuel-Cell-Systems-Ltd/FIFA_Leage
 
+---
+
 ## Features
-- Player registration with FIFA team selection
-- Match recording
-- Real-time league standings
-- Match history
-- Dark mode support
-- Fully self-contained (no external database required)
+- Player registration with FIFA team selection  
+- Match recording and automatic table updates  
+- Real-time league standings  
+- Match history viewer  
+- Dark mode  
+- Fully self-contained — data stored in a JSON file  
+- Portable and easy to deploy on any Node-capable server  
 
-## Technology
-- Frontend: React + TypeScript + Tailwind CSS
-- Backend: Express.js
-- Data Storage: JSON file (simple and portable)
+---
 
-## AWS Deployment Instructions
+## Technology Stack
+**Frontend:** React + TypeScript + Tailwind + Vite  
+**Backend:** Express.js  
+**Data Storage:** `data.json` file (auto-created on first run)  
+**Deployment Target:** AWS EC2 (Amazon Linux)
 
-### Prerequisites
-- AWS EC2 t3.micro instance
-- Node.js 18+ installed
-- Git installed
+---
 
-### Deployment Steps
+# **AWS Deployment Guide**
 
-1. **Connect to your AWS instance:**
+This application is designed to run as a single Express server on **port 3000**, serving both:
+
+- The built React frontend  
+- The backend API (`/api/...`)
+
+## **Prerequisites**
+- AWS EC2 t3.micro instance (Amazon Linux 2023 recommended)  
+- Node.js 20+ (we use Node 22 with nvm)  
+- Git installed  
+- Port **3000** open in your EC2 Security Group  
+
+---
+
+# 1. Connect to your EC2 instance
+
 ```bash
 ssh -i your-key.pem ec2-user@your-instance-ip
+````
+
+---
+
+# 2. Install Node.js via nvm (recommended)
+
+```bash
+cd ~
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+source ~/.bashrc
+nvm install 22
+nvm use 22
 ```
 
-2. **Install Node.js (if not already installed):**
-```bash
-curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
-sudo yum install -y nodejs
-```
+---
 
-3. **Clone the repository:**
+# 3. Clone the repository
+
 ```bash
-git clone https://github.com/Fuel-Cell-Systems-Ltd/FIFA_Leage.git
+git clone git@github.com:Fuel-Cell-Systems-Ltd/FIFA_Leage.git
 cd FIFA_Leage
 ```
 
-4. **Install dependencies:**
+> ⚠️ If using SSH deploy keys, add them under `~/.ssh/` and register the public key as a *Deploy Key* in GitHub.
+
+---
+
+# 4. Install dependencies
+
 ```bash
 npm install
 ```
 
-5. **Build the frontend:**
+---
+
+# 5. Build the frontend
+
 ```bash
 npm run build
 ```
 
-6. **Start the server:**
+This generates the production UI inside the `dist/` folder.
+
+---
+
+# 6. Start the server
+
 ```bash
 npm start
 ```
 
-The application will run on port 3000 by default.
+This starts the Express server on **port 3000**, serving:
 
-### Running as a Service (Optional)
+* React frontend (from `dist/`)
+* API routes (`/api/standings`, `/api/matches`, ...)
 
-To keep the application running permanently, use PM2:
+---
+
+# **Application URL**
+
+```
+http://your-instance-ip:3000
+```
+
+---
+
+# **Run as a Service (Recommended)**
+
+Using PM2 ensures the server restarts on boot and stays running in the background.
+
+## Install PM2
 
 ```bash
-# Install PM2
 sudo npm install -g pm2
+```
 
-# Start the application
+## Start the app
+
+```bash
 pm2 start server.js --name fifa-league
+```
 
-# Save the PM2 process list
+## Save the process list
+
+```bash
 pm2 save
+```
 
-# Setup PM2 to start on boot
+## Enable PM2 at boot
+
+```bash
 pm2 startup
 ```
 
-### Accessing the Application
-
-Once running, access the application at:
-- `http://your-instance-ip:3000`
-
-### Firewall Configuration
-
-Make sure port 3000 is open in your AWS Security Group:
-1. Go to EC2 Dashboard
-2. Security Groups
-3. Edit inbound rules
-4. Add rule: Custom TCP, Port 3000, Source: 0.0.0.0/0
-
-## Data Storage
-
-All data is stored in `data.json` file in the project root. This file is automatically created when the server starts. To backup your data, simply copy this file.
-
-## Local Development
+To check logs:
 
 ```bash
-# Install dependencies
-npm install
+pm2 logs fifa-league
+```
 
-# Start the API in one terminal (port 3000)
+To restart after a code pull:
+
+```bash
+pm2 restart fifa-league
+```
+
+---
+
+# **AWS Security Group Rule**
+
+Add inbound rule:
+
+* **Type:** Custom TCP
+* **Port:** 3000
+* **Source:** 0.0.0.0/0 (or restrict to office IPs)
+
+---
+
+# **Data Storage**
+
+All match and player data is stored in:
+
+```
+data.json
+```
+
+This file is created automatically and updated on every match submission.
+
+To back it up:
+
+```bash
+cp data.json data-backup.json
+```
+
+---
+
+# **Local Development Workflow**
+
+Terminal 1 (backend):
+
+```bash
 npm start
+```
 
-# In another terminal, start the Vite dev server (frontend, port 5173 with API proxy)
+Terminal 2 (frontend with hot reload):
+
+```bash
 npm run dev
+```
 
-# Build for production
+Build production assets:
+
+```bash
 npm run build
+```
 
-# Start production server
+Run production server locally:
+
+```bash
 npm start
+```
+
+---
+
+# **Deployment Updates (Git → EC2)**
+
+On the EC2 instance:
+
+```bash
+cd ~/FIFA_Leage
+git pull
+npm install
+npm run build
+pm2 restart fifa-league
+```
+
+This updates both frontend and backend.
+
+---
+
+# **Summary**
+
+This application is designed for simplicity:
+
+* One Node server
+* One JSON data file
+* One port to expose
+* Zero external dependencies
+* Easy updates via `git pull + pm2 restart`
+
+Perfect for small internal tournaments like the FCSL FIFA League.
+
+Just say the word and I’ll extend the README.
 ```
