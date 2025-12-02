@@ -102,7 +102,10 @@ All data is stored in `data.json` file in the project root. This file is automat
 # Install dependencies
 npm install
 
-# Start development server (frontend only)
+# Start the API in one terminal (port 3000)
+npm start
+
+# In another terminal, start the Vite dev server (frontend, port 5173 with API proxy)
 npm run dev
 
 # Build for production

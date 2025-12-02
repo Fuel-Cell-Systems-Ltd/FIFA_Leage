@@ -8,7 +8,12 @@ interface Player {
   team_id: string;
 }
 
-export function MatchRecorder({ onMatchRecorded }: { onMatchRecorded: () => void }) {
+interface MatchRecorderProps {
+  onMatchRecorded: () => void;
+  refreshKey?: number;
+}
+
+export function MatchRecorder({ onMatchRecorded, refreshKey }: MatchRecorderProps) {
   const [players, setPlayers] = useState<Player[]>([]);
   const [player1Id, setPlayer1Id] = useState('');
   const [player2Id, setPlayer2Id] = useState('');
@@ -19,7 +24,7 @@ export function MatchRecorder({ onMatchRecorded }: { onMatchRecorded: () => void
 
   useEffect(() => {
     loadPlayers();
-  }, []);
+  }, [refreshKey]);
 
   const loadPlayers = async () => {
     try {

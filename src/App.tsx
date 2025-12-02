@@ -59,12 +59,12 @@ function App() {
       <main className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <PlayerRegistration onPlayerAdded={handleDataChange} />
-          <MatchRecorder onMatchRecorded={handleDataChange} />
+          <MatchRecorder onMatchRecorded={handleDataChange} refreshKey={refreshKey} />
         </div>
 
         <div key={refreshKey} className="space-y-6">
-          <LeagueTable />
-          <MatchHistory />
+          <LeagueTable refreshKey={refreshKey} onDataChange={handleDataChange} />
+          <MatchHistory refreshKey={refreshKey} onDataChange={handleDataChange} />
         </div>
       </main>
     </div>

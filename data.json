@@ -1,0 +1,259 @@
+{
+  "players": [
+    {
+      "id": "1764683469040",
+      "name": "Bryan",
+      "team_id": "23",
+      "created_at": "2025-12-02T13:51:09.040Z"
+    },
+    {
+      "id": "1764683489786",
+      "name": "Santthos",
+      "team_id": "1764683485241",
+      "created_at": "2025-12-02T13:51:29.786Z"
+    }
+  ],
+  "matches": [],
+  "teams": [
+    {
+      "id": "1",
+      "name": "Manchester United",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "name": "Manchester City",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "name": "Liverpool",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "4",
+      "name": "Arsenal",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "5",
+      "name": "Chelsea",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "6",
+      "name": "Tottenham",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "7",
+      "name": "Leicester City",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "8",
+      "name": "West Ham",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "9",
+      "name": "Everton",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "10",
+      "name": "Newcastle",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "11",
+      "name": "Barcelona",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "12",
+      "name": "Real Madrid",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "13",
+      "name": "Atletico Madrid",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "14",
+      "name": "Sevilla",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "15",
+      "name": "Valencia",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "16",
+      "name": "Bayern Munich",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "17",
+      "name": "Borussia Dortmund",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "18",
+      "name": "RB Leipzig",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "19",
+      "name": "Bayer Leverkusen",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "20",
+      "name": "Wolfsburg",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "21",
+      "name": "Juventus",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "22",
+      "name": "Inter Milan",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "23",
+      "name": "AC Milan",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "24",
+      "name": "Napoli",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "25",
+      "name": "Roma",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "26",
+      "name": "PSG",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "27",
+      "name": "Marseille",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "28",
+      "name": "Lyon",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "29",
+      "name": "Monaco",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "30",
+      "name": "Lille",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "31",
+      "name": "Ajax",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "32",
+      "name": "PSV",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "33",
+      "name": "Feyenoord",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "34",
+      "name": "Porto",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "35",
+      "name": "Benfica",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "36",
+      "name": "Sporting CP",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "37",
+      "name": "Celtic",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "38",
+      "name": "Rangers",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "39",
+      "name": "River Plate",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "40",
+      "name": "Boca Juniors",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "41",
+      "name": "Flamengo",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "42",
+      "name": "Palmeiras",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "43",
+      "name": "Santos",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "44",
+      "name": "Al Nassr",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "45",
+      "name": "Al Hilal",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "46",
+      "name": "LA Galaxy",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "47",
+      "name": "Inter Miami",
+      "created_at": "2025-12-02T00:00:00.000Z"
+    },
+    {
+      "id": "1764683485241",
+      "name": "Jokey",
+      "created_at": "2025-12-02T13:51:25.241Z"
+    }
+  ]
+}

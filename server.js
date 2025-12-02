@@ -88,6 +88,37 @@ app.post('/api/matches', (req, res) => {
   res.json(newMatch);
 });
 
+app.put('/api/matches/:id', (req, res) => {
+  const data = readData();
+  const matchIndex = data.matches.findIndex(m => m.id === req.params.id);
+
+  if (matchIndex === -1) {
+    return res.status(404).json({ error: 'Match not found' });
+  }
+
+  const existing = data.matches[matchIndex];
+  const updatedMatch = {
+    ...existing,
+    player1_id: req.body.player1_id ?? existing.player1_id,
+    player2_id: req.body.player2_id ?? existing.player2_id,
+    player1_score: req.body.player1_score ?? existing.player1_score,
+    player2_score: req.body.player2_score ?? existing.player2_score,
+    match_date: req.body.match_date ?? existing.match_date,
+    updated_at: new Date().toISOString()
+  };
+
+  data.matches[matchIndex] = updatedMatch;
+  writeData(data);
+  res.json(updatedMatch);
+});
+
+app.post('/api/reset', (req, res) => {
+  const data = readData();
+  data.matches = [];
+  writeData(data);
+  res.json({ success: true });
+});
+
 app.get('/api/standings', (req, res) => {
   const data = readData();
   const standings = {};
@@ -150,7 +181,8 @@ app.get('/api/standings', (req, res) => {
   res.json(standingsArray);
 });
 
-app.get('*', (req, res) => {
+// Fallback to SPA entrypoint for any non-API route
+app.use((req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
 

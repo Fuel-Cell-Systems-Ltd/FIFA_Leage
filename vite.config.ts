@@ -7,4 +7,10 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  server: {
+    // Forward API calls to the Express server during `npm run dev`
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
+  },
 });

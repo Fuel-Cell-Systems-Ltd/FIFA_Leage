@@ -60,8 +60,37 @@ export async function createMatch(
   return response.json();
 }
 
+export async function updateMatch(
+  id: string,
+  player1Id: string,
+  player2Id: string,
+  player1Score: number,
+  player2Score: number,
+  matchDate: string
+) {
+  const response = await fetch(`${API_URL}/matches/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      player1_id: player1Id,
+      player2_id: player2Id,
+      player1_score: player1Score,
+      player2_score: player2Score,
+      match_date: matchDate
+    })
+  });
+  if (!response.ok) throw new Error('Failed to update match');
+  return response.json();
+}
+
 export async function fetchStandings() {
   const response = await fetch(`${API_URL}/standings`);
   if (!response.ok) throw new Error('Failed to fetch standings');
+  return response.json();
+}
+
+export async function resetLeague() {
+  const response = await fetch(`${API_URL}/reset`, { method: 'POST' });
+  if (!response.ok) throw new Error('Failed to reset league');
   return response.json();
 }
