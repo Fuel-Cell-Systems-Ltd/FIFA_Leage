@@ -17,8 +17,8 @@ export function MatchRecorder({ onMatchRecorded, refreshKey }: MatchRecorderProp
   const [players, setPlayers] = useState<Player[]>([]);
   const [player1Id, setPlayer1Id] = useState('');
   const [player2Id, setPlayer2Id] = useState('');
-  const [player1Score, setPlayer1Score] = useState(0);
-  const [player2Score, setPlayer2Score] = useState(0);
+  const [player1Score, setPlayer1Score] = useState('');
+  const [player2Score, setPlayer2Score] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -46,11 +46,13 @@ export function MatchRecorder({ onMatchRecorded, refreshKey }: MatchRecorderProp
     setError('');
 
     try {
-      await createMatch(player1Id, player2Id, player1Score, player2Score, new Date().toISOString());
+      const p1 = player1Score === '' ? 0 : Number(player1Score);
+      const p2 = player2Score === '' ? 0 : Number(player2Score);
+      await createMatch(player1Id, player2Id, p1, p2, new Date().toISOString());
       setPlayer1Id('');
       setPlayer2Id('');
-      setPlayer1Score(0);
-      setPlayer2Score(0);
+      setPlayer1Score('');
+      setPlayer2Score('');
       onMatchRecorded();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to record match');
@@ -122,10 +124,15 @@ export function MatchRecorder({ onMatchRecorded, refreshKey }: MatchRecorderProp
               type="number"
               id="score1"
               value={player1Score}
-              onChange={(e) => setPlayer1Score(Math.max(0, parseInt(e.target.value) || 0))}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === '' || /^[0-9]+$/.test(val)) {
+                  setPlayer1Score(val);
+                }
+              }}
               min="0"
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-center text-xl font-semibold"
-              required
+              inputMode="numeric"
             />
           </div>
 
@@ -137,10 +144,15 @@ export function MatchRecorder({ onMatchRecorded, refreshKey }: MatchRecorderProp
               type="number"
               id="score2"
               value={player2Score}
-              onChange={(e) => setPlayer2Score(Math.max(0, parseInt(e.target.value) || 0))}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === '' || /^[0-9]+$/.test(val)) {
+                  setPlayer2Score(val);
+                }
+              }}
               min="0"
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-center text-xl font-semibold"
-              required
+              inputMode="numeric"
             />
           </div>
         </div>
