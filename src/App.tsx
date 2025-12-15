@@ -5,11 +5,12 @@ import { LeagueTable } from './components/LeagueTable';
 import { MatchHistory } from './components/MatchHistory';
 import { PlayerManager } from './components/PlayerManager';
 import { PositionTrendChart } from './components/PositionTrendChart';
-import { Moon, Sun, Users, Award, History, LineChart, LayoutGrid } from 'lucide-react';
+import { FeaturesOverview } from './components/FeaturesOverview';
+import { Moon, Sun, Users, Award, History, LineChart, LayoutGrid, ListChecks } from 'lucide-react';
 
 function App() {
   const [refreshKey, setRefreshKey] = useState(0);
-  const [activePage, setActivePage] = useState<'league' | 'history' | 'positions' | 'player'>('league');
+  const [activePage, setActivePage] = useState<'league' | 'history' | 'positions' | 'player' | 'features'>('league');
   const [hasEditAccess, setHasEditAccess] = useState(false);
   const [passkeyInput, setPasskeyInput] = useState('');
   const [passkeyError, setPasskeyError] = useState('');
@@ -35,7 +36,8 @@ function App() {
     { key: 'league', label: 'League', icon: LayoutGrid },
     { key: 'history', label: 'History', icon: History },
     { key: 'positions', label: 'Position Graph', icon: LineChart },
-    { key: 'player', label: 'Player', icon: Users }
+    { key: 'player', label: 'Player', icon: Users },
+    { key: 'features', label: 'Features', icon: ListChecks }
   ] as const;
 
   const handlePasskeySubmit = (e: FormEvent) => {
@@ -171,6 +173,10 @@ function App() {
                 <PlayerRegistration onPlayerAdded={handleDataChange} disabled={!hasEditAccess} />
                 <PlayerManager onChange={handleDataChange} disabled={!hasEditAccess} />
               </div>
+            )}
+
+            {activePage === 'features' && (
+              <FeaturesOverview refreshKey={refreshKey} />
             )}
           </section>
         </div>
