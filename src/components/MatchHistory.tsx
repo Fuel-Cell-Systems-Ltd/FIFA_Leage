@@ -24,7 +24,7 @@ interface MatchHistoryProps {
   allowEditing?: boolean;
 }
 
-const MAX_VISIBLE_MATCHES = 10;
+const ITEMS_PER_PAGE = 10;
 
 export function MatchHistory({ refreshKey, onDataChange, className = '', allowEditing = true }: MatchHistoryProps) {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -41,6 +41,7 @@ export function MatchHistory({ refreshKey, onDataChange, className = '', allowEd
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     loadData();
@@ -66,6 +67,7 @@ export function MatchHistory({ refreshKey, onDataChange, className = '', allowEd
         .sort((a: Match, b: Match) => new Date(b.match_date).getTime() - new Date(a.match_date).getTime());
 
       setMatches(sortedMatches);
+      setCurrentPage(1);
       const playersMap = new Map(playersData.map((p: Player) => [p.id, p]));
       setPlayers(playersMap);
     } catch (err) {
@@ -129,9 +131,25 @@ export function MatchHistory({ refreshKey, onDataChange, className = '', allowEd
   };
 
   const visibleMatches = useMemo(
-    () => matches.slice(0, MAX_VISIBLE_MATCHES),
-    [matches]
+    () => {
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      return matches.slice(start, start + ITEMS_PER_PAGE);
+    },
+    [matches, currentPage]
   );
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(matches.length / ITEMS_PER_PAGE));
+    setCurrentPage(prev => Math.min(prev, totalPages));
+  }, [matches.length]);
+
+  const totalPages = Math.max(1, Math.ceil(matches.length / ITEMS_PER_PAGE));
+  const showingFrom = matches.length === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1;
+  const showingTo = Math.min(matches.length, currentPage * ITEMS_PER_PAGE);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(totalPages, page)));
+  };
 
   if (loading) {
     return (
@@ -155,7 +173,9 @@ export function MatchHistory({ refreshKey, onDataChange, className = '', allowEd
         <h2 className="text-lg font-semibold">Recent Matches</h2>
       </button>
       <div className="text-xs text-gray-500 dark:text-gray-400">
-        Showing latest {visibleMatches.length}{matches.length > MAX_VISIBLE_MATCHES ? ` of ${matches.length}` : ''}
+        {matches.length === 0
+          ? 'No matches yet'
+          : `Showing ${showingFrom}-${showingTo} of ${matches.length}`}
       </div>
     </div>
   );
@@ -309,6 +329,29 @@ export function MatchHistory({ refreshKey, onDataChange, className = '', allowEd
               );
             })}
           </div>
+          {matches.length > ITEMS_PER_PAGE && (
+            <div className="flex items-center justify-between mt-6 text-sm text-gray-600 dark:text-gray-300">
+              <button
+                type="button"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>

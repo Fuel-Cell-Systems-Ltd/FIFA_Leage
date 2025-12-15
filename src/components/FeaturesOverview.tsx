@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { ListChecks, PlayCircle, CheckCircle, AlertTriangle } from 'lucide-react';
 import { fetchMatches, fetchPlayers } from '../lib/api';
 
+const PLAYED_PAGE_SIZE = 6;
+
 interface Player {
   id: string;
   name: string;
@@ -39,6 +41,7 @@ export function FeaturesOverview({ refreshKey }: FeaturesOverviewProps) {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [playedPage, setPlayedPage] = useState(1);
 
   useEffect(() => {
     loadData();
@@ -54,6 +57,7 @@ export function FeaturesOverview({ refreshKey }: FeaturesOverviewProps) {
       ]);
       setPlayers(playersData);
       setMatches(matchesData);
+      setPlayedPage(1);
     } catch (err) {
       console.error('Failed to load feature data', err);
       setError('Unable to load latest player/match data.');
@@ -128,6 +132,20 @@ export function FeaturesOverview({ refreshKey }: FeaturesOverviewProps) {
       (a, b) => new Date(b.match.match_date).getTime() - new Date(a.match.match_date).getTime()
     );
   }, [matchesByPair, playersMap]);
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(gamesPlayed.length / PLAYED_PAGE_SIZE));
+    setPlayedPage(prev => Math.min(prev, totalPages));
+  }, [gamesPlayed.length]);
+
+  const playedTotalPages = Math.max(1, Math.ceil(gamesPlayed.length / PLAYED_PAGE_SIZE));
+  const paginatedGamesPlayed = useMemo(() => {
+    const start = (playedPage - 1) * PLAYED_PAGE_SIZE;
+    return gamesPlayed.slice(start, start + PLAYED_PAGE_SIZE);
+  }, [gamesPlayed, playedPage]);
+  const playedShowingFrom =
+    gamesPlayed.length === 0 ? 0 : (playedPage - 1) * PLAYED_PAGE_SIZE + 1;
+  const playedShowingTo = Math.min(gamesPlayed.length, playedPage * PLAYED_PAGE_SIZE);
 
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString('en-US', {
@@ -214,42 +232,76 @@ export function FeaturesOverview({ refreshKey }: FeaturesOverviewProps) {
             Record your first match to start filling this list.
           </p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {gamesPlayed.map(({ key, match, player1, player2, duplicateCount }) => (
-              <div
-                key={key}
-                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50/70 dark:bg-gray-900/30"
-              >
-                <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-2">
-                  <span>{formatDate(match.match_date)}</span>
-                  {duplicateCount > 1 && (
-                    <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
-                      Multiple results
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {player1.name}
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {match.player1_score}
-                    </p>
+          <>
+            <div className="flex items-center justify-between mb-3 text-xs text-gray-500 dark:text-gray-400">
+              <span>
+                Showing {playedShowingFrom}-{playedShowingTo} of {gamesPlayed.length}
+              </span>
+              {playedTotalPages > 1 && (
+                <span>
+                  Page {playedPage} / {playedTotalPages}
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {paginatedGamesPlayed.map(({ key, match, player1, player2, duplicateCount }) => (
+                <div
+                  key={key}
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50/70 dark:bg-gray-900/30"
+                >
+                  <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-2">
+                    <span>{formatDate(match.match_date)}</span>
+                    {duplicateCount > 1 && (
+                      <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                        Multiple results
+                      </span>
+                    )}
                   </div>
-                  <div className="px-4 text-xs font-medium text-gray-500 dark:text-gray-400">vs</div>
-                  <div className="flex-1 text-right">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {player2.name}
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {match.player2_score}
-                    </p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {player1.name}
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {match.player1_score}
+                      </p>
+                    </div>
+                    <div className="px-4 text-xs font-medium text-gray-500 dark:text-gray-400">
+                      vs
+                    </div>
+                    <div className="flex-1 text-right">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {player2.name}
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {match.player2_score}
+                      </p>
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+            {playedTotalPages > 1 && (
+              <div className="flex items-center justify-between mt-4 text-sm text-gray-600 dark:text-gray-300">
+                <button
+                  type="button"
+                  onClick={() => setPlayedPage(page => Math.max(1, page - 1))}
+                  disabled={playedPage === 1}
+                  className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPlayedPage(page => Math.min(playedTotalPages, page + 1))}
+                  disabled={playedPage === playedTotalPages}
+                  className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50"
+                >
+                  Next
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
 
