@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { fetchStandings, resetLeague, fetchTeams } from '../lib/api';
-import { Award, RefreshCw, ChevronDown, ChevronRight } from 'lucide-react';
+import { fetchStandings, fetchTeams } from '../lib/api';
+import { Award, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface Standing {
   player_id: string;
@@ -18,7 +18,6 @@ interface Standing {
 
 interface LeagueTableProps {
   refreshKey?: number;
-  onDataChange?: () => void;
 }
 
 interface Team {
@@ -26,11 +25,10 @@ interface Team {
   name: string;
 }
 
-export function LeagueTable({ refreshKey, onDataChange }: LeagueTableProps) {
+export function LeagueTable({ refreshKey }: LeagueTableProps) {
   const [standings, setStandings] = useState<Standing[]>([]);
   const [loading, setLoading] = useState(true);
   const [collapsableOpen, setCollapsableOpen] = useState(true);
-  const [resetting, setResetting] = useState(false);
   const [teams, setTeams] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
@@ -47,18 +45,6 @@ export function LeagueTable({ refreshKey, onDataChange }: LeagueTableProps) {
       console.error('Failed to load standings:', err);
     }
     setLoading(false);
-  };
-
-  const handleReset = async () => {
-    setResetting(true);
-    try {
-      await resetLeague();
-      await loadStandings();
-      onDataChange?.();
-    } catch (err) {
-      console.error('Failed to reset league:', err);
-    }
-    setResetting(false);
   };
 
   if (loading) {
@@ -81,15 +67,6 @@ export function LeagueTable({ refreshKey, onDataChange }: LeagueTableProps) {
         {collapsableOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         <Award className="w-5 h-5 text-blue-600" />
         <span className="text-lg font-semibold">League Standings</span>
-      </button>
-      <button
-        type="button"
-        onClick={handleReset}
-        disabled={resetting}
-        className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50"
-      >
-        <RefreshCw className={`w-4 h-4 ${resetting ? 'animate-spin' : ''}`} />
-        {resetting ? 'Resetting...' : 'Reset League'}
       </button>
     </div>
   );
