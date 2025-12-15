@@ -7,11 +7,11 @@ import { PlayerManager } from './components/PlayerManager';
 import { PositionTrendChart } from './components/PositionTrendChart';
 import { FeaturesOverview } from './components/FeaturesOverview';
 import { AdminPanel } from './components/AdminPanel';
-import { Moon, Sun, Users, Award, History, LineChart, LayoutGrid, ListChecks } from 'lucide-react';
+import { Moon, Sun, Users, Award, History, LineChart, LayoutGrid, ListChecks, ShieldAlert } from 'lucide-react';
 
 function App() {
   const [refreshKey, setRefreshKey] = useState(0);
-  const [activePage, setActivePage] = useState<'league' | 'history' | 'positions' | 'player' | 'features'>('league');
+  const [activePage, setActivePage] = useState<'league' | 'history' | 'positions' | 'player' | 'features' | 'admin'>('league');
   const [hasEditAccess, setHasEditAccess] = useState(false);
   const [passkeyInput, setPasskeyInput] = useState('');
   const [passkeyError, setPasskeyError] = useState('');
@@ -38,7 +38,8 @@ function App() {
     { key: 'history', label: 'History', icon: History },
     { key: 'positions', label: 'Position Graph', icon: LineChart },
     { key: 'player', label: 'Player', icon: Users },
-    { key: 'features', label: 'Features', icon: ListChecks }
+    { key: 'features', label: 'Features', icon: ListChecks },
+    { key: 'admin', label: 'Admin', icon: ShieldAlert }
   ] as const;
 
   const handlePasskeySubmit = (e: FormEvent) => {
@@ -115,77 +116,75 @@ function App() {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="flex flex-col xl:flex-row gap-6">
-          <div className="flex flex-col lg:flex-row flex-1 gap-6">
-            <aside className="lg:w-64 w-full">
-              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
-                <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
-                  <Award className="w-5 h-5 text-blue-600" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">FIFA League</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Choose a page</p>
-                  </div>
+        <div className="flex flex-col lg:flex-row gap-6">
+          <aside className="lg:w-64 w-full">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
+                <Award className="w-5 h-5 text-blue-600" />
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">FIFA League</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Choose a page</p>
                 </div>
-                <nav className="flex flex-col">
-                  {navItems.map(item => {
-                    const Icon = item.icon;
-                    const isActive = activePage === item.key;
-                    return (
-                      <button
-                        key={item.key}
-                        type="button"
-                        onClick={() => setActivePage(item.key)}
-                        className={`flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-                          isActive
-                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-100 border-l-4 border-blue-600'
-                            : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
-                        }`}
-                      >
-                        <Icon className="w-5 h-5" />
-                        <span className="text-sm font-medium">{item.label}</span>
-                      </button>
-                    );
-                  })}
-                </nav>
               </div>
-            </aside>
-
-            <section className="flex-1 space-y-6">
-              {activePage === 'league' && (
-                <>
-                  <MatchRecorder onMatchRecorded={handleDataChange} refreshKey={refreshKey} disabled={!hasEditAccess} />
-                  <LeagueTable refreshKey={refreshKey} />
-                </>
-              )}
-
-              {activePage === 'history' && (
-                <MatchHistory
-                  refreshKey={refreshKey}
-                  onDataChange={handleDataChange}
-                  allowEditing={hasEditAccess}
-                />
-              )}
-
-              {activePage === 'positions' && (
-                <PositionTrendChart refreshKey={refreshKey} />
-              )}
-
-              {activePage === 'player' && (
-                <div className="space-y-6">
-                  <PlayerRegistration onPlayerAdded={handleDataChange} disabled={!hasEditAccess} />
-                  <PlayerManager onChange={handleDataChange} disabled={!hasEditAccess} />
-                </div>
-              )}
-
-              {activePage === 'features' && (
-                <FeaturesOverview refreshKey={refreshKey} />
-              )}
-            </section>
-          </div>
-
-          <aside className="xl:w-80 w-full">
-            <AdminPanel hasEditAccess={hasEditAccess} onDataChange={handleDataChange} />
+              <nav className="flex flex-col">
+                {navItems.map(item => {
+                  const Icon = item.icon;
+                  const isActive = activePage === item.key;
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => setActivePage(item.key)}
+                      className={`flex items-center gap-3 px-4 py-3 text-left transition-colors ${
+                        isActive
+                          ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-100 border-l-4 border-blue-600'
+                          : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span className="text-sm font-medium">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
           </aside>
+
+          <section className="flex-1 space-y-6">
+            {activePage === 'league' && (
+              <>
+                <MatchRecorder onMatchRecorded={handleDataChange} refreshKey={refreshKey} disabled={!hasEditAccess} />
+                <LeagueTable refreshKey={refreshKey} />
+              </>
+            )}
+
+            {activePage === 'history' && (
+              <MatchHistory
+                refreshKey={refreshKey}
+                onDataChange={handleDataChange}
+                allowEditing={hasEditAccess}
+              />
+            )}
+
+            {activePage === 'positions' && (
+              <PositionTrendChart refreshKey={refreshKey} />
+            )}
+
+            {activePage === 'player' && (
+              <div className="space-y-6">
+                <PlayerRegistration onPlayerAdded={handleDataChange} disabled={!hasEditAccess} />
+                <PlayerManager onChange={handleDataChange} disabled={!hasEditAccess} />
+              </div>
+            )}
+
+            {activePage === 'features' && (
+              <FeaturesOverview refreshKey={refreshKey} />
+            )}
+
+            {activePage === 'admin' && (
+              <AdminPanel hasEditAccess={hasEditAccess} onDataChange={handleDataChange} />
+            )}
+          </section>
         </div>
       </main>
     </div>
